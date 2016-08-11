@@ -27,7 +27,9 @@ def distance(data_1, data_2, mask):
                 summ += np.sqrt(s*s)
                 total_neighs += 1
 
-    if(total_neighs == 0): return 0.0
+    if(total_neighs == 0): 
+        print "warning neighs"
+        return 0.0
     summ /= total_neighs
     return summ
 
@@ -37,7 +39,8 @@ def find_similar(img_data, neigh_window, mask_window):
     img_xsize, img_ysize = img_data.shape
 
     candidates = []
-    thresh = 2.0
+    dists = []
+    #thresh = 2.0
 
     for i in range(xs, img_xsize - xs):
         for j in range(ys, img_ysize - ys):
@@ -46,8 +49,15 @@ def find_similar(img_data, neigh_window, mask_window):
             d = distance(sub_window, neigh_window, mask_window)
             cx = int(np.floor(xs/2))
             cy = int(np.floor(ys/2))
-            if(d < thresh): candidates.append(sub_window[cx, cy])
+            candidates.append(sub_window[cx, cy])
+            dists.append(d)
 
+    min_dist = np.min(dists)
+    mask = dists - min_dist < 0.5
+
+    candidates = np.extract(mask, candidates)
+    print min_dist, candidates
+    
 
     # pick random among candidates
     if len(candidates) < 1:
@@ -135,10 +145,10 @@ def efros(img, new_size_x, new_size_y, kernel_size):
 
 # main program
 
-filename = "img.png"
-new_size_x = 20
-new_size_y = 20
-kernel_size = 5
+filename = "img2.png"
+new_size_x = 10
+new_size_y = 10
+kernel_size = 9
 
 img = Image.open(filename)
 
@@ -150,3 +160,6 @@ print "Finished!"
 
 plt.imshow(img_new, cmap = "Greys")
 plt.show()
+
+img_new.convert("RGB").save("output.png")
+
