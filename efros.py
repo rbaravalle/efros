@@ -10,9 +10,11 @@ def distance(data_1, data_2, mask):
 
     xs, ys = data_1.shape
     xs2, ys2 = data_2.shape
+    xs3, ys3 = mask.shape
 
     if(xs != xs2 or ys != ys2) :
         print "Warning!!"
+    if(xs3 != xs or ys3 != ys): print "Warning, mask size: ", mask.shape, " different from data1 ", data_1.shape
 
     total_neighs = 0.0
 
@@ -58,19 +60,18 @@ def find_similar(img_data, neigh_window, mask_window):
 
 
     center_value = candidates[r]
-    print center_value
     return center_value
 
-def process_pixel(i, j, img, mask, kernel_size):
+def process_pixel(i, j, img, new_img_data, mask, kernel_size):
 
     img_data = np.array(img)
 
     x0 = max(0, i - kernel_size)
     y0 = max(0, j - kernel_size) 
-    x1 = min(img.size[0] - 1, i + kernel_size)
-    y1 = min(img.size[1] - 1, j + kernel_size)
+    x1 = min(new_img_data.shape[0] - 1, i + kernel_size)
+    y1 = min(new_img_data.shape[1] - 1, j + kernel_size)
 
-    neigh_window = img_data[x0 : x1, y0 : y1]
+    neigh_window = new_img_data[x0 : x1, y0 : y1]
 
     mask_window = mask[x0 : x1, y0 : y1]
 
@@ -104,13 +105,13 @@ def efros(img, new_size_x, new_size_y, kernel_size):
 
     it = 0
     for i in range(size_seed_x, new_size_x ):
-        print "Process ", i, " out of ", new_size_x
+        print "Process ", i, " / ", new_size_x
 
         last_y = size_seed_x + it
         # xxxxxxx
         for j in range(0, last_y + 1):
             #print "process pixel" , i, j
-            v = process_pixel(i, j, img, mask, kernel_size)
+            v = process_pixel(i, j, img, new_image_data, mask, kernel_size)
 
             new_image_data[i, j] = v
             mask[i, j] = True
@@ -121,7 +122,7 @@ def efros(img, new_size_x, new_size_y, kernel_size):
         # x
         for x in range(0, size_seed_y + it + 1):
             #print "process pixel" , x, last_y
-            v = process_pixel(x, last_y, img, mask, kernel_size)
+            v = process_pixel(x, last_y, img, new_image_data, mask, kernel_size)
 
             new_image_data[x, last_y] = v
             mask[x, last_y] = True
@@ -130,20 +131,22 @@ def efros(img, new_size_x, new_size_y, kernel_size):
 
     img_new = Image.fromarray(new_image_data)
 
-    print mask
-
     return img_new
 
 # main program
 
 filename = "img.png"
-new_size_x = 40
-new_size_y = 40
+new_size_x = 20
+new_size_y = 20
 kernel_size = 5
 
 img = Image.open(filename)
 
+print "Starting..."
+
 img_new = efros(img, new_size_x, new_size_y, kernel_size/2)
+
+print "Finished!"
 
 plt.imshow(img_new, cmap = "Greys")
 plt.show()
