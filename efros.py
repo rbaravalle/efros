@@ -3,35 +3,34 @@ import matplotlib.pyplot as plt
 import numpy as np
 from random import randint
 
+output_file = "out2.png"
+
 # Efros and Leung 1999 implementation
 
 def distance(data_1, data_2, mask):
-    summ = 0.0
+    #summ = 0.0
 
-    xs, ys = data_1.shape
-    xs2, ys2 = data_2.shape
-    xs3, ys3 = mask.shape
+    #xs, ys = data_1.shape
+    #xs2, ys2 = data_2.shape
+    #xs3, ys3 = mask.shape
 
-    if(xs != xs2 or ys != ys2) :
-        print "Warning!!"
-    if(xs3 != xs or ys3 != ys): print "Warning, mask size: ", mask.shape, " different from data1 ", data_1.shape
-
-    total_neighs = 0.0
+    #if(xs != xs2 or ys != ys2) :
+    #    print "Warning!!"
+    #if(xs3 != xs or ys3 != ys): print "Warning, mask size: ", mask.shape, " different from data1 ", data_1.shape
 
     # TO-DO Gaussian Kernel
 
-    for i in range(xs):
-        for j in range(ys):
-            if mask[i, j] == True:
-                s = abs(data_1[i, j] - data_2[i, j])
-                summ += np.sqrt(s*s)
-                total_neighs += 1
+    s = data_1 - data_2
 
-    if(total_neighs == 0): 
+    summ = np.sqrt(s*s)
+
+    summ = np.extract(mask, summ)
+
+    if(len(summ) == 0): 
         print "warning neighs"
         return 0.0
-    summ /= total_neighs
-    return summ
+
+    return np.sum(summ) / len(summ)
 
 def find_similar(img_data, neigh_window, mask_window):
     
@@ -40,7 +39,6 @@ def find_similar(img_data, neigh_window, mask_window):
 
     candidates = []
     dists = []
-    #thresh = 2.0
 
     for i in range(xs, img_xsize - xs):
         for j in range(ys, img_ysize - ys):
@@ -56,7 +54,7 @@ def find_similar(img_data, neigh_window, mask_window):
     mask = dists - min_dist < 0.5
 
     candidates = np.extract(mask, candidates)
-    print min_dist, candidates
+    #print min_dist, candidates
     
 
     # pick random among candidates
@@ -139,16 +137,19 @@ def efros(img, new_size_x, new_size_y, kernel_size):
 
         it += 1
 
-    img_new = Image.fromarray(new_image_data)
+
+        img_new = Image.fromarray(new_image_data)
+        img_new.convert("RGB").save(output_file)
+
 
     return img_new
 
 # main program
 
 filename = "img2.png"
-new_size_x = 10
-new_size_y = 10
-kernel_size = 9
+new_size_x = 100
+new_size_y = 100
+kernel_size = 21
 
 img = Image.open(filename)
 
@@ -161,5 +162,6 @@ print "Finished!"
 plt.imshow(img_new, cmap = "Greys")
 plt.show()
 
-img_new.convert("RGB").save("output.png")
+
+img_new.convert("RGB").save(output_file)
 
