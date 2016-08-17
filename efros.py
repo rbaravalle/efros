@@ -2,13 +2,13 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import numpy as np
 from random import randint
+from time import time
 
 output_file = "out2.png"
 
 # Efros and Leung 1999 implementation
 
 def distance(data_1, data_2, mask):
-    #summ = 0.0
 
     #xs, ys = data_1.shape
     #xs2, ys2 = data_2.shape
@@ -22,7 +22,7 @@ def distance(data_1, data_2, mask):
 
     s = data_1 - data_2
 
-    summ = np.sqrt(s*s)
+    summ = s
 
     summ = np.extract(mask, summ)
 
@@ -85,7 +85,7 @@ def process_pixel(i, j, img, new_img_data, mask, kernel_size):
 
     return find_similar(img_data, neigh_window, mask_window)
 
-def efros(img, new_size_x, new_size_y, kernel_size):
+def efros(img, new_size_x, new_size_y, kernel_size, t):
 
     img = img.convert("L")
 
@@ -113,7 +113,7 @@ def efros(img, new_size_x, new_size_y, kernel_size):
 
     it = 0
     for i in range(size_seed_x, new_size_x ):
-        print "Process ", i, " / ", new_size_x
+        print "Process ", i, " / ", new_size_x, ". Time: ", time() - t, " seconds"
 
         last_y = size_seed_x + it
         # xxxxxxx
@@ -147,15 +147,19 @@ def efros(img, new_size_x, new_size_y, kernel_size):
 # main program
 
 filename = "img2.png"
-new_size_x = 100
-new_size_y = 100
+new_size_x = 256
+new_size_y = 256
 kernel_size = 21
 
 img = Image.open(filename)
 
 print "Starting..."
 
-img_new = efros(img, new_size_x, new_size_y, kernel_size/2)
+t = time()
+
+img_new = efros(img, new_size_x, new_size_y, kernel_size/2, t)
+
+print "Total Time: ", time() - t, " seconds"
 
 print "Finished!"
 
