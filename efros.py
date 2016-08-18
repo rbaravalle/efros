@@ -8,32 +8,19 @@ output_file = "out2.png"
 
 # Efros and Leung 1999 implementation
 
-def distance(data_1, data_2, mask):
+def process_pixel(x, y, img, new_img_data, mask, kernel_size):
 
-    #xs, ys = data_1.shape
-    #xs2, ys2 = data_2.shape
-    #xs3, ys3 = mask.shape
+    img_data = np.array(img)
 
-    #if(xs != xs2 or ys != ys2) :
-    #    print "Warning!!"
-    #if(xs3 != xs or ys3 != ys): print "Warning, mask size: ", mask.shape, " different from data1 ", data_1.shape
+    x0 = max(0, x - kernel_size)
+    y0 = max(0, y - kernel_size) 
+    x1 = min(new_img_data.shape[0] - 1, x + kernel_size)
+    y1 = min(new_img_data.shape[1] - 1, y + kernel_size)
 
-    # TO-DO Gaussian Kernel
+    neigh_window = new_img_data[x0 : x1, y0 : y1]
 
-    s = data_1 - data_2
+    mask_window = mask[x0 : x1, y0 : y1]
 
-    summ = s
-
-    summ = np.extract(mask, summ)
-
-    if(len(summ) == 0): 
-        print "warning neighs"
-        return 0.0
-
-    return np.sum(summ) / len(summ)
-
-def find_similar(img_data, neigh_window, mask_window):
-    
     xs, ys = neigh_window.shape
     img_xsize, img_ysize = img_data.shape
 
@@ -42,20 +29,25 @@ def find_similar(img_data, neigh_window, mask_window):
 
     for i in range(xs, img_xsize - xs):
         for j in range(ys, img_ysize - ys):
+            if(randint(0,2) != 0): continue
             sub_window = img_data[i : i+xs, j : j+ys]
 
-            d = distance(sub_window, neigh_window, mask_window)
+            # distance
+            s = (sub_window - neigh_window)*mask_window
+
+            summ = s*s
+
+            d = np.sum(summ) / float(len(mask_window==True))
+
             cx = int(np.floor(xs/2))
             cy = int(np.floor(ys/2))
             candidates.append(sub_window[cx, cy])
             dists.append(d)
 
     min_dist = np.min(dists)
-    mask = dists - min_dist < 0.5
+    mask = dists - min_dist < 0.2
 
-    candidates = np.extract(mask, candidates)
-    #print min_dist, candidates
-    
+    candidates = np.extract(mask, candidates)   
 
     # pick random among candidates
     if len(candidates) < 1:
@@ -70,20 +62,7 @@ def find_similar(img_data, neigh_window, mask_window):
     center_value = candidates[r]
     return center_value
 
-def process_pixel(i, j, img, new_img_data, mask, kernel_size):
-
-    img_data = np.array(img)
-
-    x0 = max(0, i - kernel_size)
-    y0 = max(0, j - kernel_size) 
-    x1 = min(new_img_data.shape[0] - 1, i + kernel_size)
-    y1 = min(new_img_data.shape[1] - 1, j + kernel_size)
-
-    neigh_window = new_img_data[x0 : x1, y0 : y1]
-
-    mask_window = mask[x0 : x1, y0 : y1]
-
-    return find_similar(img_data, neigh_window, mask_window)
+    
 
 def efros(img, new_size_x, new_size_y, kernel_size, t):
 
@@ -118,7 +97,7 @@ def efros(img, new_size_x, new_size_y, kernel_size, t):
         last_y = size_seed_x + it
         # xxxxxxx
         for j in range(0, last_y + 1):
-            #print "process pixel" , i, j
+
             v = process_pixel(i, j, img, new_image_data, mask, kernel_size)
 
             new_image_data[i, j] = v
@@ -129,7 +108,7 @@ def efros(img, new_size_x, new_size_y, kernel_size, t):
         # x
         # x
         for x in range(0, size_seed_y + it + 1):
-            #print "process pixel" , x, last_y
+
             v = process_pixel(x, last_y, img, new_image_data, mask, kernel_size)
 
             new_image_data[x, last_y] = v
