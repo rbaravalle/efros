@@ -8,9 +8,7 @@ output_file = "out2.png"
 
 # Efros and Leung 1999 implementation
 
-def process_pixel(x, y, img, new_img_data, mask, kernel_size):
-
-    img_data = np.array(img)
+def process_pixel(x, y, img_data, new_img_data, mask, kernel_size):
 
     x0 = max(0, x - kernel_size)
     y0 = max(0, y - kernel_size) 
@@ -44,8 +42,7 @@ def process_pixel(x, y, img, new_img_data, mask, kernel_size):
             candidates.append(sub_window[cx, cy])
             dists.append(d)
 
-    min_dist = np.min(dists)
-    mask = dists - min_dist < 0.2
+    mask = dists - np.min(dists) < 0.2
 
     candidates = np.extract(mask, candidates)   
 
@@ -58,9 +55,7 @@ def process_pixel(x, y, img, new_img_data, mask, kernel_size):
         else:
             r = 0
 
-
-    center_value = candidates[r]
-    return center_value
+    return candidates[r]
 
     
 
@@ -98,7 +93,7 @@ def efros(img, new_size_x, new_size_y, kernel_size, t):
         # xxxxxxx
         for j in range(0, last_y + 1):
 
-            v = process_pixel(i, j, img, new_image_data, mask, kernel_size)
+            v = process_pixel(i, j, img_data, new_image_data, mask, kernel_size)
 
             new_image_data[i, j] = v
             mask[i, j] = True
@@ -109,7 +104,7 @@ def efros(img, new_size_x, new_size_y, kernel_size, t):
         # x
         for x in range(0, size_seed_y + it + 1):
 
-            v = process_pixel(x, last_y, img, new_image_data, mask, kernel_size)
+            v = process_pixel(x, last_y, img_data, new_image_data, mask, kernel_size)
 
             new_image_data[x, last_y] = v
             mask[x, last_y] = True
