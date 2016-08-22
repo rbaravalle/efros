@@ -22,6 +22,9 @@ def process_pixel(x, y, img_data, new_img_data, mask, kernel_size):
     xs, ys = neigh_window.shape
     img_xsize, img_ysize = img_data.shape
 
+    cx = int(np.floor(xs/2))
+    cy = int(np.floor(ys/2))
+
     candidates = []
     dists = []
 
@@ -37,8 +40,6 @@ def process_pixel(x, y, img_data, new_img_data, mask, kernel_size):
 
             d = np.sum(summ) / float(len(mask_window==True))
 
-            cx = int(np.floor(xs/2))
-            cy = int(np.floor(ys/2))
             candidates.append(sub_window[cx, cy])
             dists.append(d)
 
