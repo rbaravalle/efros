@@ -18,6 +18,7 @@ def process_pixel(x, y, img_data, new_img_data, mask, kernel_size):
     neigh_window = new_img_data[x0 : x1, y0 : y1]
 
     mask_window = mask[x0 : x1, y0 : y1]
+    len_mask = float(len(mask_window==True))
 
     xs, ys = neigh_window.shape
     img_xsize, img_ysize = img_data.shape
@@ -34,11 +35,11 @@ def process_pixel(x, y, img_data, new_img_data, mask, kernel_size):
             sub_window = img_data[i : i+xs, j : j+ys]
 
             # distance
-            s = (sub_window - neigh_window)*mask_window
+            s = (sub_window - neigh_window)
 
-            summ = s*s
+            summ = s*s*mask_window
 
-            d = np.sum(summ) / float(len(mask_window==True))
+            d = np.sum(summ) / len_mask
 
             candidates.append(sub_window[cx, cy])
             dists.append(d)
@@ -113,8 +114,9 @@ def efros(img, new_size_x, new_size_y, kernel_size, t):
         it += 1
 
 
-        img_new = Image.fromarray(new_image_data)
-        img_new.convert("RGB").save(output_file)
+        if(it % 10 == 0) :
+            img_new = Image.fromarray(new_image_data)
+            img_new.convert("RGB").save(output_file)
 
 
     return img_new
