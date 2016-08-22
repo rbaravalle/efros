@@ -61,18 +61,13 @@ def process_pixel(x, y, img_data, new_img_data, mask, kernel_size):
 
     
 
-def efros(img, new_size_x, new_size_y, kernel_size, t):
-
-    img = img.convert("L")
+def efros(img_data, new_size_x, new_size_y, kernel_size, t):
 
     patch_size_x, patch_size_y = img.size 
     size_seed_x = size_seed_y = 3
 
     seed_x = randint(0, size_seed_x)
     seed_y = randint(0, size_seed_y)
-
-
-    img_data = np.array(img)
 
     # take 3x3 start image (seed) in the original image
     seed_data = img_data[seed_x : seed_x + size_seed_x, seed_y : seed_y + size_seed_y]
@@ -129,12 +124,14 @@ new_size_y = 256
 kernel_size = 21
 
 img = Image.open(filename)
+img_data = img.convert("L")
+img_data = np.array(img_data)
 
 print "Starting..."
 
 t = time()
 
-img_new = efros(img, new_size_x, new_size_y, kernel_size/2, t)
+img_new = efros(img_data, new_size_x, new_size_y, kernel_size/2, t)
 
 print "Total Time: ", time() - t, " seconds"
 
